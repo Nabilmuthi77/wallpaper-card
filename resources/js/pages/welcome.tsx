@@ -92,6 +92,17 @@ export default function WallpaperSlider() {
     if (current >= wallpapers.length - 1) setCurrent(0);
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setForm({ ...form, src: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const ModalContainer = ({ children }) => (
     <motion.div
       className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4"
@@ -125,14 +136,14 @@ export default function WallpaperSlider() {
   );
 
   return (
-    <div className="w-full min-h-screen flex flex-col justify-center items-center py-10 px-4 sm:px-8 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 relative">
+    <div className="font-cormorant w-full min-h-screen flex flex-col justify-center items-center py-10 px-4 sm:px-8 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 relative">
       {/* Button Tambah */}
       <button
         onClick={openAddModal}
         className="absolute top-6 right-6 flex items-center gap-2 bg-indigo-800 hover:bg-indigo-900 text-white px-4 py-2 rounded-md shadow-lg transition-all duration-300 hover:scale-105 z-50"
       >
         <Plus className="w-5 h-5" />
-        <span className="hidden sm:inline font-medium">Tambah</span>
+        <span className="hidden sm:inline font-medium">Tambah Wallpaper</span>
       </button>
 
       {/* Slider */}
@@ -248,13 +259,24 @@ export default function WallpaperSlider() {
                 }
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
               />
+
+              {/* Upload File */}
               <input
-                type="text"
-                placeholder="URL Gambar"
-                value={form.src}
-                onChange={(e) => setForm({ ...form, src: e.target.value })}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
               />
+              {form.src && (
+                <div className="mt-3 flex justify-center">
+                  <img
+                    src={form.src}
+                    alt="Preview"
+                    className="max-h-48 rounded-lg shadow-lg border border-gray-700 object-contain"
+                  />
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 mt-4">
                 <button
                   type="button"
@@ -298,13 +320,24 @@ export default function WallpaperSlider() {
                 }
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
               />
+
+              {/* Upload File */}
               <input
-                type="text"
-                placeholder="URL Gambar"
-                value={form.src}
-                onChange={(e) => setForm({ ...form, src: e.target.value })}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white"
               />
+              {form.src && (
+                <div className="mt-3 flex justify-center">
+                  <img
+                    src={form.src}
+                    alt="Preview"
+                    className="max-h-48 rounded-lg shadow-lg border border-gray-700 object-contain"
+                  />
+                </div>
+              )}
+
               <div className="flex justify-end gap-3 mt-4">
                 <button
                   type="button"
