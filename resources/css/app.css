@@ -12,6 +12,10 @@
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+    --font-average: 'Average Sans', sans-serif;
+    --font-montserrat: 'Montserrat', sans-serif;
+    --font-croissant: 'Croissant One', cursive;
+    --font-cormorant: 'Cormorant Infant', serif;
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
