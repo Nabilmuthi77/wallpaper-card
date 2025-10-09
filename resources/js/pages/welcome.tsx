@@ -10,7 +10,6 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 // ==================== MODAL COMPONENTS ====================
-
 const ModalContainer = memo(({ children }: { children: React.ReactNode }) => (
   <motion.div
     className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4"
@@ -57,9 +56,9 @@ const ModalCard = memo(
 );
 
 // ===========================================================
-
 export default function WallpaperSlider() {
   const API_URL = "http://wallpaper-card.test/api/wallpaper";
+  const STORAGE_URL = "http://wallpaper-card.test/storage/wallpaper";
 
   const [wallpaper, setWallpaper] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -74,7 +73,7 @@ export default function WallpaperSlider() {
 
   // Form state
   const [form, setForm] = useState({
-    pict_name: "",
+    char_name: "",
     element: "",
     file: null as File | null,
   });
@@ -101,16 +100,16 @@ export default function WallpaperSlider() {
   // === HANDLERS ===
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) setForm((prev) => ({ ...prev, file, pict_name: file.name }));
+    if (file) setForm((prev) => ({ ...prev, file }));
   };
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const formData = new FormData();
-      if (form.file) formData.append("file", form.file);
-      formData.append("pict_name", form.pict_name);
+      formData.append("char", form.char_name);
       formData.append("element", form.element);
+      if (form.file) formData.append("file", form.file);
 
       const res = await fetch(API_URL, {
         method: "POST",
@@ -118,7 +117,6 @@ export default function WallpaperSlider() {
       });
 
       if (!res.ok) throw new Error("Gagal menambahkan wallpaper");
-
       await fetchWallpaper();
       setShowAddModal(false);
     } catch (err: any) {
@@ -129,12 +127,11 @@ export default function WallpaperSlider() {
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedWallpaper) return;
-
     try {
       const formData = new FormData();
-      if (form.file) formData.append("file", form.file);
-      formData.append("pict_name", form.pict_name);
+      formData.append("char", form.char_name);
       formData.append("element", form.element);
+      if (form.file) formData.append("file", form.file);
       formData.append("_method", "PUT");
 
       const res = await fetch(`${API_URL}/${selectedWallpaper.id}`, {
@@ -143,7 +140,6 @@ export default function WallpaperSlider() {
       });
 
       if (!res.ok) throw new Error("Gagal mengubah wallpaper");
-
       await fetchWallpaper();
       setShowEditModal(false);
     } catch (err: any) {
@@ -157,9 +153,7 @@ export default function WallpaperSlider() {
       const res = await fetch(`${API_URL}/${selectedWallpaper.id}`, {
         method: "DELETE",
       });
-
       if (!res.ok) throw new Error("Gagal menghapus wallpaper");
-
       await fetchWallpaper();
       setShowDeleteModal(false);
     } catch (err: any) {
@@ -190,7 +184,7 @@ export default function WallpaperSlider() {
       {/* Tombol Tambah */}
       <button
         onClick={() => {
-          setForm({ pict_name: "", element: "", file: null });
+          setForm({ char_name: "", element: "", file: null });
           setShowAddModal(true);
         }}
         className="absolute top-6 right-6 flex items-center gap-2 bg-indigo-800 hover:bg-indigo-900 text-white px-4 py-2 rounded-md shadow-lg transition-all duration-300 hover:scale-105 z-50"
@@ -201,7 +195,7 @@ export default function WallpaperSlider() {
       {/* SLIDER */}
       <div className="relative w-full max-w-6xl h-[75vh] sm:h-[85vh] flex items-center justify-center overflow-hidden rounded-3xl shadow-2xl border border-white/10">
         {wallpaper.map((w, i) => {
-          const imageUrl = `/wallpaper/${w.pict_name}`;
+          const imageUrl = `wallpaper/${w.pict_name}`;
           return (
             <div
               key={w.id}
@@ -220,7 +214,7 @@ export default function WallpaperSlider() {
               <div className="flex justify-center items-center h-full">
                 <img
                   src={imageUrl}
-                  alt={w.pict_name}
+                  alt={w.char_name}
                   className="max-h-[80vh] max-w-[90vw] object-contain drop-shadow-2xl"
                 />
               </div>
@@ -229,18 +223,19 @@ export default function WallpaperSlider() {
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white px-6 sm:px-10 pb-10 text-center sm:text-left">
                 <div className="max-w-2xl mx-auto sm:mx-0">
                   <h2 className="text-3xl font-bold mb-3 capitalize">
-                    {w.pict_name.replace(".png", "")}
+                    {w.char_name}
                   </h2>
                   <p className="text-lg opacity-90 capitalize">
                     Element: {w.element}
                   </p>
                 </div>
+
                 <div className="absolute bottom-5 right-5 flex gap-3">
                   <button
                     onClick={() => {
                       setSelectedWallpaper(w);
                       setForm({
-                        pict_name: w.pict_name,
+                        char_name: w.char_name,
                         element: w.element,
                         file: null,
                       });
@@ -282,6 +277,7 @@ export default function WallpaperSlider() {
 
       {/* === MODALS === */}
       <AnimatePresence>
+        {/* Tambah */}
         {showAddModal && (
           <ModalContainer>
             <ModalCard
@@ -291,16 +287,20 @@ export default function WallpaperSlider() {
             >
               <input
                 type="text"
-                placeholder="Nama Gambar"
-                value={form.pict_name}
-                onChange={(e) => setForm((f) => ({ ...f, pict_name: e.target.value }))}
+                placeholder="Nama Karakter"
+                value={form.char_name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, char_name: e.target.value }))
+                }
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
                 type="text"
                 placeholder="Element"
                 value={form.element}
-                onChange={(e) => setForm((f) => ({ ...f, element: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, element: e.target.value }))
+                }
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
@@ -319,6 +319,7 @@ export default function WallpaperSlider() {
           </ModalContainer>
         )}
 
+        {/* Edit */}
         {showEditModal && (
           <ModalContainer>
             <ModalCard
@@ -328,16 +329,20 @@ export default function WallpaperSlider() {
             >
               <input
                 type="text"
-                placeholder="Nama Gambar"
-                value={form.pict_name}
-                onChange={(e) => setForm((f) => ({ ...f, pict_name: e.target.value }))}
+                placeholder="Nama Karakter"
+                value={form.char_name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, char_name: e.target.value }))
+                }
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
                 type="text"
                 placeholder="Element"
                 value={form.element}
-                onChange={(e) => setForm((f) => ({ ...f, element: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, element: e.target.value }))
+                }
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
@@ -356,6 +361,7 @@ export default function WallpaperSlider() {
           </ModalContainer>
         )}
 
+        {/* Delete */}
         {showDeleteModal && (
           <ModalContainer>
             <ModalCard
@@ -368,7 +374,7 @@ export default function WallpaperSlider() {
             >
               <p className="text-center mb-4">
                 Yakin ingin menghapus{" "}
-                <strong>{selectedWallpaper?.pict_name}</strong>?
+                <strong>{selectedWallpaper?.char_name}</strong>?
               </p>
               <div className="flex justify-center gap-4">
                 <button
