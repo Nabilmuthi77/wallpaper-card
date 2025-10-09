@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('wallpaper', function (Blueprint $table) {
             $table->id();
+            $table->string('char_name');
             $table->string('pict_name');
             $table->string('element');
             $table->timestamps();

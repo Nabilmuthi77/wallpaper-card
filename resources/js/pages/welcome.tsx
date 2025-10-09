@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -9,38 +9,84 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+// ==================== MODAL COMPONENTS ====================
+
+const ModalContainer = memo(({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+  >
+    {children}
+  </motion.div>
+));
+
+const ModalCard = memo(
+  ({
+    title,
+    onClose,
+    onSubmit,
+    children,
+  }: {
+    title: string;
+    onClose: () => void;
+    onSubmit: (e: React.FormEvent) => void;
+    children: React.ReactNode;
+  }) => (
+    <motion.div
+      initial={{ scale: 0.8, opacity: 0, y: -30 }}
+      animate={{ scale: 1, opacity: 1, y: 0 }}
+      exit={{ scale: 0.8, opacity: 0, y: 30 }}
+      transition={{ type: "spring", stiffness: 200, damping: 20 }}
+      className="bg-gray-900 text-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md relative"
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
+      >
+        <X className="w-6 h-6" />
+      </button>
+      <h2 className="text-2xl font-bold mb-6 text-center">{title}</h2>
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
+        {children}
+      </form>
+    </motion.div>
+  )
+);
+
+// ===========================================================
+
 export default function WallpaperSlider() {
   const API_URL = "http://wallpaper-card.test/api/wallpaper";
 
   const [wallpaper, setWallpaper] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   const [current, setCurrent] = useState(0);
 
-  // Modal & form
+  // Modal state
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedWallpaper, setSelectedWallpaper] = useState<any | null>(null);
 
+  // Form state
   const [form, setForm] = useState({
     pict_name: "",
     element: "",
     file: null as File | null,
   });
 
-  // === FETCH (GET) ===
+  // === FETCH DATA ===
   const fetchWallpaper = async () => {
     setLoading(true);
     try {
       const response = await fetch(API_URL);
       const result = await response.json();
-      if (result.status && result.data) {
-        setWallpaper(result.data);
-      } else {
-        throw new Error("Format data tidak sesuai");
-      }
+      if (result.status && result.data) setWallpaper(result.data);
+      else throw new Error("Format data tidak sesuai");
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -52,7 +98,12 @@ export default function WallpaperSlider() {
     fetchWallpaper();
   }, []);
 
-  // === POST ===
+  // === HANDLERS ===
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) setForm((prev) => ({ ...prev, file, pict_name: file.name }));
+  };
+
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -75,7 +126,6 @@ export default function WallpaperSlider() {
     }
   };
 
-  // === PUT ===
   const handleEdit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedWallpaper) return;
@@ -85,13 +135,11 @@ export default function WallpaperSlider() {
       if (form.file) formData.append("file", form.file);
       formData.append("pict_name", form.pict_name);
       formData.append("element", form.element);
+      formData.append("_method", "PUT");
 
       const res = await fetch(`${API_URL}/${selectedWallpaper.id}`, {
-        method: "POST", // Laravel kadang butuh _method=PUT untuk FormData
-        body: (() => {
-          formData.append("_method", "PUT");
-          return formData;
-        })(),
+        method: "POST",
+        body: formData,
       });
 
       if (!res.ok) throw new Error("Gagal mengubah wallpaper");
@@ -103,7 +151,6 @@ export default function WallpaperSlider() {
     }
   };
 
-  // === DELETE ===
   const handleDelete = async () => {
     if (!selectedWallpaper) return;
     try {
@@ -119,56 +166,6 @@ export default function WallpaperSlider() {
       alert(err.message);
     }
   };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setForm({ ...form, file, pict_name: file.name });
-    }
-  };
-
-  // === Modal Components ===
-  const ModalContainer = ({ children }: { children: React.ReactNode }) => (
-    <motion.div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 px-4"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
-      {children}
-    </motion.div>
-  );
-
-  const ModalCard = ({
-    title,
-    onClose,
-    onSubmit,
-    children,
-  }: {
-    title: string;
-    onClose: () => void;
-    onSubmit: (e: React.FormEvent) => void;
-    children: React.ReactNode;
-  }) => (
-    <motion.div
-      initial={{ scale: 0.8, opacity: 0, y: -30 }}
-      animate={{ scale: 1, opacity: 1, y: 0 }}
-      exit={{ scale: 0.8, opacity: 0, y: 30 }}
-      transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className="bg-gray-900 text-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md relative"
-    >
-      <button
-        onClick={onClose}
-        className="absolute top-3 right-3 text-gray-400 hover:text-white transition"
-      >
-        <X className="w-6 h-6" />
-      </button>
-      <h2 className="text-2xl font-bold mb-6 text-center">{title}</h2>
-      <form onSubmit={onSubmit} className="flex flex-col gap-4">
-        {children}
-      </form>
-    </motion.div>
-  );
 
   // === UI ===
   if (loading)
@@ -190,7 +187,7 @@ export default function WallpaperSlider() {
 
   return (
     <div className="font-cormorant w-full min-h-screen flex flex-col justify-center items-center py-10 px-4 sm:px-8 bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 relative">
-      {/* Tambah */}
+      {/* Tombol Tambah */}
       <button
         onClick={() => {
           setForm({ pict_name: "", element: "", file: null });
@@ -201,11 +198,10 @@ export default function WallpaperSlider() {
         <Plus className="w-5 h-5" /> Tambah Wallpaper
       </button>
 
-      {/* Slider */}
+      {/* SLIDER */}
       <div className="relative w-full max-w-6xl h-[75vh] sm:h-[85vh] flex items-center justify-center overflow-hidden rounded-3xl shadow-2xl border border-white/10">
         {wallpaper.map((w, i) => {
           const imageUrl = `/wallpaper/${w.pict_name}`;
-          
           return (
             <div
               key={w.id}
@@ -229,7 +225,7 @@ export default function WallpaperSlider() {
                 />
               </div>
 
-              {/* Info + Buttons */}
+              {/* Info & Tombol */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent text-white px-6 sm:px-10 pb-10 text-center sm:text-left">
                 <div className="max-w-2xl mx-auto sm:mx-0">
                   <h2 className="text-3xl font-bold mb-3 capitalize">
@@ -284,7 +280,7 @@ export default function WallpaperSlider() {
         </button>
       </div>
 
-      {/* === Modal Tambah === */}
+      {/* === MODALS === */}
       <AnimatePresence>
         {showAddModal && (
           <ModalContainer>
@@ -297,16 +293,14 @@ export default function WallpaperSlider() {
                 type="text"
                 placeholder="Nama Gambar"
                 value={form.pict_name}
-                onChange={(e) =>
-                  setForm({ ...form, pict_name: e.target.value })
-                }
+                onChange={(e) => setForm((f) => ({ ...f, pict_name: e.target.value }))}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
                 type="text"
                 placeholder="Element"
                 value={form.element}
-                onChange={(e) => setForm({ ...form, element: e.target.value })}
+                onChange={(e) => setForm((f) => ({ ...f, element: e.target.value }))}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
@@ -325,7 +319,6 @@ export default function WallpaperSlider() {
           </ModalContainer>
         )}
 
-        {/* === Modal Edit === */}
         {showEditModal && (
           <ModalContainer>
             <ModalCard
@@ -337,16 +330,14 @@ export default function WallpaperSlider() {
                 type="text"
                 placeholder="Nama Gambar"
                 value={form.pict_name}
-                onChange={(e) =>
-                  setForm({ ...form, pict_name: e.target.value })
-                }
+                onChange={(e) => setForm((f) => ({ ...f, pict_name: e.target.value }))}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
                 type="text"
                 placeholder="Element"
                 value={form.element}
-                onChange={(e) => setForm({ ...form, element: e.target.value })}
+                onChange={(e) => setForm((f) => ({ ...f, element: e.target.value }))}
                 className="bg-gray-800 border border-gray-700 rounded-lg px-4 py-2"
               />
               <input
@@ -365,7 +356,6 @@ export default function WallpaperSlider() {
           </ModalContainer>
         )}
 
-        {/* === Modal Delete === */}
         {showDeleteModal && (
           <ModalContainer>
             <ModalCard
