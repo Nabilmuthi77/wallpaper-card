@@ -333,14 +333,11 @@ export default function WallpaperSlider() {
               <button onClick={() => setShowAdd(false)} className="p-2"><X /></button>
             </div>
             <form onSubmit={handleAdd} className="space-y-4">
-              <input value={form.char_name} onChange={(e) => setForm((f) => ({ ...f, char_name: e.target.value }))} placeholder="Nama Karakter" className="w-full px-4 py-2 rounded-lg bg-black/20" />
+              <input value={form.char_name} onChange={(e) => setForm((f) => ({ ...f, char_name: e.target.value }))} placeholder="Nama Karakter" className="w-full px-4 py-2 rounded-lg bg-black/20 border border-white/10" />
               <select
                 value={form.element}
                 onChange={(e) => setForm((f) => ({ ...f, element: e.target.value }))}
-                className="w-full px-4 py-2 rounded-lg bg-black/30 text-white border border-white/10 focus:border-cyan-400 appearance-none"
-                style={{
-                  backgroundColor: "rgba(0, 0, 0, 0.3)",
-                }}
+                className="w-full px-4 py-2 rounded-lg bg-black/20 text-white border border-white/10 focus:border-cyan-400 appearance-none"
               >
                 <option value="" style={{ backgroundColor: "rgba(15, 25, 45, 0.95)", }}>
                   --- Pilih Element ---
@@ -380,12 +377,11 @@ export default function WallpaperSlider() {
               <button onClick={() => setShowEdit(false)} className="p-2"><X /></button>
             </div>
             <form onSubmit={handleEdit} className="space-y-4">
-              <input value={form.char_name} onChange={(e) => setForm((f) => ({ ...f, char_name: e.target.value }))} placeholder="Nama Karakter" className="w-full px-4 py-2 rounded-lg bg-black/20" />
+              <input value={form.char_name} onChange={(e) => setForm((f) => ({ ...f, char_name: e.target.value }))} placeholder="Nama Karakter" className="w-full px-4 py-2 rounded-lg bg-black/30 border border-white/10" />
               <select
                 value={form.element}
                 onChange={(e) => setForm((f) => ({ ...f, element: e.target.value }))}
-                className="w-full px-4 py-2 rounded-lg bg-black/30 text-white border border-white/10 focus:border-cyan-400 appearance-none"
-                style={{ backgroundColor: 'rgba(0, 0, 0, 0.3)' }}
+                className="w-full px-4 py-2 rounded-lg bg-black/30 text-white border border-white/10 appearance-none"
               >
                 <option
                   value=""
