@@ -81,6 +81,7 @@ export default function WallpaperSlider() {
   const autoplayRef = useRef<number | null>(null);
   const [autoplay, setAutoplay] = useState(true);
 
+  
   useEffect(() => {
     fetchList();
     // Keyboard Nav
@@ -284,10 +285,27 @@ export default function WallpaperSlider() {
               ))}
             </div>
 
+
+
             {/* mobile controls */}
-            <div className="absolute left-4 right-4 bottom-4 flex justify-between sm:hidden">
-              <button onClick={prev} className="bg-white/6 p-3 rounded-xl"><ChevronLeft className="w-5 h-5" /></button>
-              <button onClick={next} className="bg-white/6 p-3 rounded-xl"><ChevronRight className="w-5 h-5" /></button>
+            {/* mobile controls (kanan bawah, agak renggang) */}
+            <div className="absolute bottom-5 right-4 flex justify-end sm:hidden z-30">
+              <div className="flex items-center gap-4 bg-black/30 px-4 py-1 rounded-xl backdrop-blur-md">
+                <button
+                  onClick={prev}
+                  className="hover:bg-white/5 p-1.5 rounded-lg"
+                  aria-label="previous"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={next}
+                  className="hover:bg-white/5 p-1.5 rounded-lg"
+                  aria-label="next"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </main>
@@ -320,9 +338,27 @@ export default function WallpaperSlider() {
             ) : (
               <div className="text-sm text-white/60">Tidak ada wallpaper</div>
             )}
+
+            {/* YouTube Video (manual play, 360p, tema sama) */}
+            <div className="mt-5 flex justify-center">
+              <div className="w-full max-w-[480px] rounded-2xl overflow-hidden">
+                <div className="aspect-video">
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/FYP2dM8RTFM?vq=large&rel=0&modestbranding=1&controls=1&loop=1&playlist=FYP2dM8RTFM"
+                    title="YouTube video player"
+                    frameBorder="0"
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerPolicy="strict-origin-when-cross-origin"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            </div>
           </div>
         </aside>
       </div>
+      
 
       {/* ===== MODALS ===== */}
       <AnimatePresence>
